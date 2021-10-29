@@ -27,6 +27,13 @@ version := "1.0"
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
 libraryDependencies += "org.apache.hadoop" % "hadoop-client" % "2.7.0"
+libraryDependencies += "org.apache.hadoop" % "hadoop-common" % "2.7.3"
+libraryDependencies += "net.liftweb" %% "lift-json" % "2.6"
+libraryDependencies += "org.apache.hive" % "hive-service" % "1.2.1"
+libraryDependencies += "org.apache.hive" % "hive-cli" % "1.2.1"
+libraryDependencies += "org.apache.hive" % "hive-jdbc" % "3.1.2"
+
+libraryDependencies += "org.apache.httpcomponents" % "httpclient" % "4.3.4"
 
 // Here, `libraryDependencies` is a set of dependencies, and by using `+=`,
 // we're adding the scala-parser-combinators dependency to the set of dependencies
