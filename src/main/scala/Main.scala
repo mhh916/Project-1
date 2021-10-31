@@ -18,8 +18,8 @@ object Main {
       option match{
         case 1 => {
           var loop2 = true
-          val user = readLine("Username: ") // NOTE: Create username and password file IN HIVE and check and read from it to verify login.
-          val passwrd = readLine("Password: ") // Make it so only ADMIN can login to import data.
+          val user = scala.io.StdIn.readLine("Username: ") // NOTE: Create username and password file IN HIVE and check and read from it to verify login.
+          val passwrd = scala.io.StdIn.readLine("Password: ") // Make it so only ADMIN can login to import data.
           println()
           val hc = new hiveConnect(user,passwrd)
           hc.login()
@@ -27,6 +27,10 @@ object Main {
         }
         case 2 => {
            loop = false
+        }
+        case 3 => {
+           val api = new apiConnect("Demo")
+           api.searchEverything("game", "","" ,"","","", "1")
         }
       }
       }catch {
