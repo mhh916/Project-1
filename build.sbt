@@ -10,6 +10,7 @@ scalaVersion := "2.11.12"
 // Lines like the above defining `scalaVersion` are called "settings". Settings
 // are key/value pairs. In the case of `scalaVersion`, the key is "scalaVersion"
 // and the value is "2.13.3"
+ 
 
 // It's possible to define many kinds of settings, such as:
 
@@ -34,6 +35,8 @@ libraryDependencies += "org.apache.hive" % "hive-cli" % "1.2.1"
 libraryDependencies += "org.apache.hive" % "hive-jdbc" % "3.1.2"
 
 libraryDependencies += "org.apache.httpcomponents" % "httpclient" % "4.3.4"
+
+scalacOptions += "-deprecation"
 
 // Here, `libraryDependencies` is a set of dependencies, and by using `+=`,
 // we're adding the scala-parser-combinators dependency to the set of dependencies
