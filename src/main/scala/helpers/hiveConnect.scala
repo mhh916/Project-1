@@ -11,27 +11,12 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.DriverManager;
 
+
 import java.sql.Driver
 
 
 class hiveConnect(user: String, password: String) {
-    val path = "hdfs://sandbox-hdp.hortonworks.com:8020/user/maria_dev/"
-
-    def copyFromLocal(): Unit = {
-        val src = "file:///home/maria_dev/files2.txt"
-        val target = path + "files2.txt"
-        println(s"Copying local file $src to $target ...")
-        
-        val conf = new Configuration()
-        val fs = FileSystem.get(conf)
-
-        val localpath = new Path(src)
-        val hdfspath = new Path(target)
-        
-        fs.copyFromLocalFile(false, localpath, hdfspath)
-        println(s"Done copying local file $src to $target ...")
-    }
-
+    
     def authenticate(): auth = {
         val auth = new auth(true, true)
         
@@ -67,12 +52,12 @@ class hiveConnect(user: String, password: String) {
                 println()
                 println("Please select an option")
                 println("1. Pull Data\n2. Show Databases\n3. Use Database\n4. Create Table\n5. Show Tables\n6. Describe Table\n7. Load Data into Table\n8. Test\n9. Log Out")
-                val option = readInt()
+                val option = scala.io.StdIn.readInt()
                 println()
                         
                 option match{
                     case 1 => {
-                        hg.pullData()
+                        hg.pullData(db)
                         
 
                     }
@@ -83,8 +68,8 @@ class hiveConnect(user: String, password: String) {
                     case 3 => {
                         var loop3: Boolean = true
                         do{
-                           
-                            if(hg.getDBList().contains(hg.useDB())){
+                            db = hg.useDB()
+                            if(hg.getDBList().contains(db)){
                                 loop3 = false
                             }else{
                                 println("Not a database")
@@ -93,19 +78,18 @@ class hiveConnect(user: String, password: String) {
                         }while(loop3)
                                  
                     }
-                    case 4 => {
-                        val tbName = readLine("Enter Table Name: ") 
-                        val column = readLine("Enter Column and Datatypes: ") 
-                        hg.createTable(db, tbName, column)
+                    case 4 => { 
+                        hg.createTable(db)
+                        // NEEDS WORK
                     }
                     case 5 => {
                         hg.showTables(db)     
                     } 
                     case 6 => {
-                                
+                        hg.describeTable()            
                     } 
                     case 7 => {
-                                
+                        hg.loadDataIntoTable()            
                     } 
                     case 8 => {
                                 
@@ -129,7 +113,7 @@ class hiveConnect(user: String, password: String) {
                 do {
                     println("Please select an option")
                     println("1. Top Keyword related to Gaming\n2. News source that talks about gaming the most\n3. Most popular console.\n4. Most popular game\n5. Most popular game publisher\n6. Percent of all top news headlines related to gaming\n7. Log Out")
-                    val option = readInt()
+                    val option = scala.io.StdIn.readInt()
                     println()
                             
                     option match{
@@ -176,7 +160,7 @@ class hiveGo(){
     stmt = con.createStatement()
 
     }catch{
-        case ex => {
+        case ex: Throwable  => {
           ex.printStackTrace();
           throw new Exception(s"${ex.getMessage}")
         }
@@ -191,7 +175,7 @@ class hiveGo(){
                 dbList =  res.getString(1) :: dbList
             }
         }
-        val database = readLine("Enter Database: ")     
+        val database = scala.io.StdIn.readLine("Enter Database: ")     
         database
     }
 
@@ -218,28 +202,44 @@ class hiveGo(){
       }
     }
     //Create Exception handling for entering wrong column layout
-    def createTable(db: String, tableName: String, columns: String): Unit = {
-        println(s"Dropping table $tableName..")
-        stmt.execute("drop table IF EXISTS " + tableName);
-        println(s"Creating table $tableName..")
-        stmt.execute(
-            "use " + db + "; create table " + tableName + " " + columns +" row format delimited  fields terminated by ','"
-        );
+    def createTable(db: String): Unit = {
+        try {
+            println(s"Database: $db")
+            if(!db.isEmpty){
+                val tableName = scala.io.StdIn.readLine("Enter Table Name: ") 
+                val columns = scala.io.StdIn.readLine("Enter Column and Datatypes: ")
+                println(s"Dropping table $tableName..")
+                stmt.execute("drop table IF EXISTS " + tableName);
+                println(s"Creating table $tableName..")
+                stmt.execute("use " + db)
+                stmt.execute(
+                    "create table " + tableName + " " + columns +" row format delimited  fields terminated by ','"
+                );
+            }else{
+                println("Select a database to use!")
+            }
+        }catch {
+            case e: Throwable  => println("\nIncorrect syntax!!\nTry again\n")
+        }
     }
     
     // Create exception handling for wrong db entered
     def showTables(db: String): Unit = {
-        // show tables
-        println(s"Show TABLES In $db..")
-        var sql = "show tables from " + db
-        System.out.println("Running: " + sql)
-        var res = stmt.executeQuery(sql)
-        if (res.next()) {
-            System.out.println(res.getString(1))
+        if(!db.isEmpty){
+            // show tables
+            println(s"Show TABLES In $db..")
+            var sql = "show tables from " + db
+            var res = stmt.executeQuery(sql)
+            if (res.next()) {
+                System.out.println(res.getString(1))
+            }
+        }else{
+            println("Please use a database first!!")
         }
     }
     
-    def describeTable( tableName: String): Unit = {
+    def describeTable(): Unit = {
+        val tableName = scala.io.StdIn.readLine("Enter Table Name: ") 
         // describe table
         println(s"Describing table $tableName..")
         var sql = "describe " + tableName
@@ -250,7 +250,9 @@ class hiveGo(){
         }
     }
 
-    def loadDataIntoTable(tableName: String, filepath: String): Unit = {
+    def loadDataIntoTable(): Unit = {
+        val tableName = scala.io.StdIn.readLine("Enter Table Name: ")
+        val filepath = "/tmp/a.txt";
         // load data into table
         // NOTE: filepath has to be local to the hive server
         // NOTE: /tmp/a.txt is a comma separated file with two fields per line
@@ -265,21 +267,21 @@ class hiveGo(){
         if (con != null)
           con.close();
       } catch {
-        case ex => {
+        case ex: Throwable  => {
           ex.printStackTrace();
           throw new Exception(s"${ex.getMessage}")
         }
       }
     }
 
-    def pullData(): Unit = {
-        val api = new apiConnect()
+    def pullData(db: String): Unit = {
+        val api = new apiConnect(db)
         var loop = true
         try {
             do {
                 println("Please select an option")
                 println("1. Pull All News\n2. Pull Top Headlines\n3. Go Back")
-                val option = readInt()
+                val option = scala.io.StdIn.readInt()
                 println()
                            
                 option match{
