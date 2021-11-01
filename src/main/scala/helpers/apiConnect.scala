@@ -31,11 +31,8 @@ class apiConnect(db: String) {
         createFile(cleanJson(result), "allnews.csv")
         val hg = new hiveGo2(db)
         hg.populateTable("allnews")
-        
-
-
     }
-
+    
     def searchTopHeadlines(search: String, country: String, category: String, sources: String, page: String): Unit = {
         val url = "https://newsapi.org/v2/top-headlines" + 
                   "?q=" + search +  
@@ -70,22 +67,6 @@ class apiConnect(db: String) {
         } catch {
             case e: Exception => s
         }
-    }
-    
-   def copyFromLocal(): Unit = {
-        val src = "hdfs://sandbox-hdp.hortonworks.com:8020/user/maria_dev/project1/Output.csv"
-        val path = "file:///home/hive/"
-        val target = path + "Output.csv"
-        println(s"Copying local file $src to $target ...")
-        
-        val conf = new Configuration()
-        val fs = FileSystem.get(conf)
-
-        val hdfspath = new Path(src)
-        val localpath = new Path(target)
-        
-        fs.copyToLocalFile(false, hdfspath, localpath)
-        println(s"Done copying hdfs file $src to $target ...")
     }
 
     def createFile(result: String, name: String): Unit = {
@@ -134,9 +115,10 @@ class apiConnect(db: String) {
             }
         }
     }
-}
 
+}
 
 case class Default(status: String, totalResults: Int, articles: List[net.liftweb.json.JObject])
 case class AllFields(source: net.liftweb.json.JValue, author: String, title: String, description: String, url: String, urlToImage: String, publishedAt: String, content: String)
 case class NewsSource(id: String, name: String)
+
