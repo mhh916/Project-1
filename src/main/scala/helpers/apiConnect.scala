@@ -15,7 +15,9 @@ import org.apache.hadoop.fs.Path;
 import java.io.File;
 import java.io.PrintWriter;
 
+
 class apiConnect(db: String) {
+
     def searchEverything(search: String, sources: String, from: String, to: String, language: String, sortBy: String, page: String): Unit = {
         val url = "https://newsapi.org/v2/everything" + 
                   "?q=" + search +  
@@ -48,6 +50,21 @@ class apiConnect(db: String) {
         hg.populateTable("topnews")
     }
 
+    def searchTopHeadlinesAll(category: String, country: String, sources: String, page: String): Unit = {
+        val url = "https://newsapi.org/v2/top-headlines" + 
+                  "?q=" +
+                  "&country=" + country +
+                  "&category=" + category +
+                  "&sources=" + sources +
+                  "&pageSize=100" +
+                  "&page=" + page +
+                  "&apiKey=0425fffcba054e00a1e722ffb03f7ff5"
+        val result = scala.io.Source.fromURL(url).mkString
+        createFile(cleanJson(result), "topnewsall.csv")
+        val hg = new hiveGo2(db)
+        hg.populateTable("topnewsall")
+    }
+
     def cleanJson(jString: String): String = {
         implicit val formats = net.liftweb.json.DefaultFormats
         var q = new StringBuilder("")
@@ -56,7 +73,7 @@ class apiConnect(db: String) {
         for(article <- resultDoc.articles){
             val art = article.extract[AllFields]
             val r = art.source.extract[NewsSource]
-            q = (q ++= s"${r.name}|${art.author}|${art.title}|${replace(art.description)}|${art.url}\n")
+            q = (q ++= s"${r.name}|${art.author}|${art.title}|${replace(art.description)}|${art.url}|${resultDoc.totalResults}\n")
         }
         q.toString()
     }
@@ -100,13 +117,14 @@ class apiConnect(db: String) {
                 println(s"Database: $db")
                 if(!db.isEmpty){
                     val filepath = "/user/maria_dev/project1/"
-                    val columns = "(name string, author string, title string, description string, url string)"
-                    println(s"Using Database:  $db..")
-                    stmt.execute("use " + db)
+                    val columns = "(name string, author string, title string, description string, url string,total int)"
+                    println(s"Dropping table if exist...")
+                    stmt.execute("DROP TABLE IF EXISTS " + tableName)
                     println("Loading file into table")
                     stmt.execute(
-                        "create external table " + tableName + columns + " row format delimited fields terminated by '|' location '" + filepath + "'"
+                        "create external table IF NOT EXISTS " + db + "."+ tableName + columns + " row format delimited fields terminated by '|' location '" + filepath + "'"
                     );
+                    println("Table populated successfully\n")
                 }else{
                     println("Select a database to use!")
                 }
@@ -115,7 +133,6 @@ class apiConnect(db: String) {
             }
         }
     }
-
 }
 
 case class Default(status: String, totalResults: Int, articles: List[net.liftweb.json.JObject])
