@@ -28,10 +28,6 @@ object Main {
         case 2 => {
            loop = false
         }
-        case 3 => {
-           val api = new apiConnect("Demo")
-           api.searchEverything("game", "","" ,"","","", "1")
-        }
       }
       }catch {
         case e: MatchError => println("Please pick a number between 1~8\n")
