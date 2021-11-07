@@ -29,7 +29,8 @@ class hiveConnect(user: String, password: String) {
             val username = login._1
             val pass = login._2
             val admin = login._3
-            if(user == username && password == pass){
+            val cipher = new Cipher(pass)
+            if(user == username && password == cipher.getDecryptedPassword()){
                 if(admin){
                     auth = new Auth(true, true)
                     println(s"Successfully logged in as $username\n")
@@ -215,16 +216,20 @@ class hiveGo(){
         }
     }
 
+    def cipher(): Unit = {
+        
+    }
     def createUser(db: String): Unit = {
          try {
             if(!db.isEmpty){
                 val tableName = "notpasswords"
                 val username = scala.io.StdIn.readLine("Enter Username: ") 
                 val password = scala.io.StdIn.readLine("Enter Password: ")
-                val admin = scala.io.StdIn.readLine("Enter Admin Status: ") 
+                val admin = scala.io.StdIn.readLine("Enter Admin Status: ")
+                val cipher = new Cipher(password)
                 println(s"Adding user to $tableName Table..")
                 stmt.execute(
-                    "insert into table project1.notpasswords select * from (select " + {'"'} + username + {'"'} + ", "+ {'"'} + password + {'"'}  +", " + {'"'} + admin + {'"'} + ")a"
+                    "insert into table project1.notpasswords select * from (select " + {'"'} + username + {'"'} + ", "+ {'"'} + cipher.getEncryptedPassword() + {'"'}  +", " + {'"'} + admin + {'"'} + ")a"
                 );
                 println("Success")
             }else{
