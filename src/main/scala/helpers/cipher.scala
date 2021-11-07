@@ -12,7 +12,7 @@ class Cipher(var password: String) {
     def getDecryptedPassword(): String = {
         decrypt(shift, password)
     }
-
+    // Shifts the ASCII values of the characters  by the shftAmt val
     def encrypt(shftAmt: Int, pass: String): String = {
         val charArray = pass.toCharArray()
         var ret = ""
@@ -32,6 +32,7 @@ class Cipher(var password: String) {
         }
         ret
     }
+    // Passes the shftAmt value to encrypt but as a negative value.
     def decrypt(shftAmt: Int, pass: String): String = {
         return encrypt((shift * - 1), pass)
     }

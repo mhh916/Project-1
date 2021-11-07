@@ -19,7 +19,8 @@ import java.sql.Driver
 class hiveConnect(user: String, password: String) {
     val hg = new hiveGo()
     var db: String = ""
-
+    
+    // Calls loginHelper to get login info from DB and decrypts password and checks if logins match
     def authenticate(): Auth = {
         var auth = new Auth(false, false)
         val column = "username, password, admin"
@@ -43,6 +44,7 @@ class hiveConnect(user: String, password: String) {
         return auth
     }
 
+    // Login loops used to authenticate login information
     def login(): Unit = {
         var loop = true
         try {
@@ -64,6 +66,7 @@ class hiveConnect(user: String, password: String) {
 
     }
 
+    // Admin user Loop to run functions
     def admin(): Unit = {
         var loop = true
         try {
@@ -120,6 +123,7 @@ class hiveConnect(user: String, password: String) {
         }
     }    
 
+    // Basic user Loop to run functions
     def user(): Unit = {
             var loop = true
             try {
@@ -164,6 +168,7 @@ class hiveConnect(user: String, password: String) {
 
 case class Auth(log: Boolean, admin: Boolean)
 
+// Helper hive class used to run basic queries
 class hiveGo(){
     var con: java.sql.Connection = null
     var stmt: java.sql.Statement = null
@@ -188,9 +193,11 @@ class hiveGo(){
           throw new Exception(s"${ex.getMessage}")
         }
     }
+    // Returns the current list of stored Databases
     def getDBList(): List[String] = {
         return dbList
     }
+    // Uses a DB from the list of stored Databases
     def useDB(): String = {
         var res = stmt.executeQuery("Show databases");
         while (res.next()) {
@@ -201,7 +208,7 @@ class hiveGo(){
         val database = scala.io.StdIn.readLine("Enter Database: ")     
         database
     }
-
+    // Will show all current stored Databases
     def showDB(): Unit = {
         var res = stmt.executeQuery("Show databases");
         while (res.next()) {
@@ -215,10 +222,7 @@ class hiveGo(){
             println(d)
         }
     }
-
-    def cipher(): Unit = {
-        
-    }
+    // Creates a new user with provided info, encrypts password to store on hive
     def createUser(db: String): Unit = {
          try {
             if(!db.isEmpty){
@@ -240,6 +244,7 @@ class hiveGo(){
         }    
     }
 
+    // Helper function used to grab all login info from hive database as a ListBuffer
     def loginHelper(column: String, table: String): ListBuffer[(String, String, Boolean)] = {
       var logins = new ListBuffer[(String, String, Boolean)]()
       println("\nAuthenticating...")
@@ -249,7 +254,7 @@ class hiveGo(){
       }
       logins
     }
-
+    // Creates a table with provided information from user in hive
     def createTable(db: String): Unit = {
         try {
             println(s"Database: $db")
@@ -270,7 +275,7 @@ class hiveGo(){
         }
     }
     
-    // Create exception handling for wrong db entered
+    // Shows all tables from currently selected Database
     def showTables(db: String): Unit = {
         if(!db.isEmpty){
             // show tables
@@ -284,7 +289,7 @@ class hiveGo(){
             println("Please use a database first!!")
         }
     }
-    
+    // Describe a table by name input from current selected Database
     def describeTable(db: String): Unit = {
         val tableName = scala.io.StdIn.readLine("Enter Table Name: ") 
         // describe table
@@ -295,7 +300,7 @@ class hiveGo(){
             println(res.getString(1) + "\t" + res.getString(2))
         }
     }
-
+    // Closes the database connection
     def closeConnection(): Unit = {
         try {
         if (con != null)
@@ -308,7 +313,7 @@ class hiveGo(){
         }
       }
     }
-
+    // Pulls the data from NewsAPI with provided search paramenters and stores it in Hive
     def pullData(db: String): Unit = {
         if(!db.isEmpty){
             val api = new apiConnect(db)

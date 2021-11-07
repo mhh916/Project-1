@@ -1,13 +1,12 @@
 import scala.io.StdIn._
 import helpers.apiConnect
 import helpers.hiveConnect
-//NOTES
-// spark-submit --packages net.liftweb:lift-json_2.11:2.6 project-one_2.11-0.1.0-SNAPSHOT.jar
-
 object Main {
   def main(args: Array[String]): Unit = {
     var loop = true
+    // Venom ASCII Logo
     println("##     ## ######## ##    ##  #######  ##     ## \n##     ## ##       ###   ## ##     ## ###   ### \n##     ## ##       ####  ## ##     ## #### #### \n##     ## ######   ## ## ## ##     ## ## ### ## \n ##   ##  ##       ##  #### ##     ## ##     ## \n  ## ##   ##       ##   ### ##     ## ##     ## \n   ###    ######## ##    ##  #######  ##     ## ")
+    // Main for loop for login and quiting application
     do{
       
       println("Please select an option")
@@ -18,8 +17,8 @@ object Main {
       option match{
         case 1 => {
           var loop2 = true
-          val user = scala.io.StdIn.readLine("Username: ") // NOTE: Create username and password file IN HIVE and check and read from it to verify login.
-          val passwrd = scala.io.StdIn.readLine("Password: ") // Make it so only ADMIN can login to import data.
+          val user = scala.io.StdIn.readLine("Username: ")
+          val passwrd = scala.io.StdIn.readLine("Password: ")
           println()
           val hc = new hiveConnect(user,passwrd)
           hc.login()

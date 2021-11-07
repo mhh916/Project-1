@@ -17,7 +17,7 @@ import java.io.PrintWriter;
 
 
 class apiConnect(db: String) {
-
+    // Searches NewsAPI all news category
     def searchEverything(search: String, sources: String, from: String, to: String, language: String, sortBy: String, page: String): Unit = {
         val url = "https://newsapi.org/v2/everything" + 
                   "?q=" + search +  
@@ -34,7 +34,7 @@ class apiConnect(db: String) {
         val hg = new hiveGo2(db)
         hg.populateTable("allnews")
     }
-    
+    // Searches NewsAPI all top news category with search param and category
     def searchTopHeadlines(search: String, country: String, category: String, sources: String, page: String): Unit = {
         val url = "https://newsapi.org/v2/top-headlines" + 
                   "?q=" + search +  
@@ -49,7 +49,7 @@ class apiConnect(db: String) {
         val hg = new hiveGo2(db)
         hg.populateTable("topnews")
     }
-
+    // Searches NewsAPI all top news category without search param and category
     def searchTopHeadlinesAll(category: String, country: String, sources: String, page: String): Unit = {
         val url = "https://newsapi.org/v2/top-headlines" + 
                   "?q=" +
@@ -64,7 +64,7 @@ class apiConnect(db: String) {
         val hg = new hiveGo2(db)
         hg.populateTable("topnewsall")
     }
-
+    // Cleans the input string of JSON to output in csv format
     def cleanJson(jString: String): String = {
         implicit val formats = net.liftweb.json.DefaultFormats
         var q = new StringBuilder("")
@@ -77,7 +77,7 @@ class apiConnect(db: String) {
         }
         q.toString()
     }
-
+    // Helper function for cleanJson to replace \n \t \r if it is not null
     def replace(s: String): String = {
         try {
             s.replace("\n", " ").replace("\t"," ").replace("\r"," ")
@@ -85,7 +85,7 @@ class apiConnect(db: String) {
             case e: Exception => s
         }
     }
-
+    // Creates a CSV file with input string and name
     def createFile(result: String, name: String): Unit = {
         val path = "hdfs://sandbox-hdp.hortonworks.com:8020/user/maria_dev/project1/"
         val filename = path + name
@@ -110,7 +110,7 @@ class apiConnect(db: String) {
         
         println(s"Done creating file $filename ...\n")
     }
-
+    // Helper class to drop, create and populate table from CSV file
     class hiveGo2(db: String) extends hiveGo() {
         def populateTable(tableName: String){
             try {
@@ -134,7 +134,7 @@ class apiConnect(db: String) {
         }
     }
 }
-
+// Case classes used to extract values from json string
 case class Default(status: String, totalResults: Int, articles: List[net.liftweb.json.JObject])
 case class AllFields(source: net.liftweb.json.JValue, author: String, title: String, description: String, url: String, urlToImage: String, publishedAt: String, content: String)
 case class NewsSource(id: String, name: String)
