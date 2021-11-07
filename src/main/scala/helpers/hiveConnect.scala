@@ -18,12 +18,13 @@ import java.sql.Driver
 
 class hiveConnect(user: String, password: String) {
     val hg = new hiveGo()
+    var db: String = ""
 
     def authenticate(): Auth = {
         var auth = new Auth(false, false)
         val column = "username, password, admin"
         val table = "project1.notpasswords"
-        val logins = hg.select(column,table)
+        val logins = hg.loginHelper(column,table)
         for (login <- logins){
             val username = login._1
             val pass = login._2
@@ -65,7 +66,7 @@ class hiveConnect(user: String, password: String) {
     def admin(): Unit = {
         var loop = true
         try {
-            var db: String = ""
+            
             do {
                 println()
                 println("Please select an option")
@@ -106,12 +107,9 @@ class hiveConnect(user: String, password: String) {
                         hg.createUser(db)            
                     } 
                     case 8 => {
-                        loop = false 
-                        hg.closeConnection()             
-                    }
-                    case 9 => {
-                                 
-                    }   
+                        loop = false
+                        hg.closeConnection()            
+                    } 
                 }   
                 
             }while(loop)
@@ -132,25 +130,26 @@ class hiveConnect(user: String, password: String) {
                             
                     option match{
                         case 1 => {
-                            
+                            hg.questionOne(db)
                         }
                         case 2 => {
-                                    
+                            hg.questionTwo(db)            
                         }
                         case 3 => {
-                                     
+                            hg.questionThree(db)             
                         }
                         case 4 => {
-                                    
+                            hg.questionFour(db)            
                         }
                         case 5 => {
-                                    
+                            hg.questionFive(db)            
                         }
                         case 6 => {
-                                    
+                            hg.questionSix(db)            
                         }
                         case 7 => {
-                            loop = false             
+                            loop = false
+                            hg.closeConnection()             
                         }    
                     }
                 }while(loop)
@@ -210,13 +209,14 @@ class hiveGo(){
                 dbList =  res.getString(1) :: dbList
             }
         }
-        System.out.println("\nshow database successfully\n");
-        println(dbList)
+        println("\nshow database successfully\n");
+        for(d <- dbList){
+            println(d)
+        }
     }
 
     def createUser(db: String): Unit = {
          try {
-            println(s"Database: $db")
             if(!db.isEmpty){
                 val tableName = "notpasswords"
                 val username = scala.io.StdIn.readLine("Enter Username: ") 
@@ -224,8 +224,9 @@ class hiveGo(){
                 val admin = scala.io.StdIn.readLine("Enter Admin Status: ") 
                 println(s"Adding user to $tableName Table..")
                 stmt.execute(
-                    "insert into table " + db + "." + tableName + " select * from (select " + {'"'} + username + {'"'} + ", "+ {'"'} + password + {'"'}  +", " + {'"'} + admin + {'"'} + ")a"
+                    "insert into table project1.notpasswords select * from (select " + {'"'} + username + {'"'} + ", "+ {'"'} + password + {'"'}  +", " + {'"'} + admin + {'"'} + ")a"
                 );
+                println("Success")
             }else{
                 println("Select a database to use!")
             }
@@ -234,12 +235,11 @@ class hiveGo(){
         }    
     }
 
-    def select(column: String, table: String): ListBuffer[(String, String, Boolean)] = {
+    def loginHelper(column: String, table: String): ListBuffer[(String, String, Boolean)] = {
       var logins = new ListBuffer[(String, String, Boolean)]()
       println("\nAuthenticating...")
       var res = stmt.executeQuery("SELECT " + column + " FROM " + table)
       while (res.next()) {
-        //println(s"${res.getString(1)},${res.getString(2)}, ${res.getString(3)}")
         logins += ((res.getString(1),res.getString(2), res.getString(3).toBoolean))
       }
       logins
@@ -269,11 +269,11 @@ class hiveGo(){
     def showTables(db: String): Unit = {
         if(!db.isEmpty){
             // show tables
-            println(s"Show TABLES In $db..")
+            println(s"Showing tables in $db..")
             var sql = "show tables from " + db
             var res = stmt.executeQuery(sql)
-            if (res.next()) {
-                System.out.println(res.getString(1))
+            while (res.next()) {
+                println(res.getString(1))
             }
         }else{
             println("Please use a database first!!")
@@ -284,17 +284,17 @@ class hiveGo(){
         val tableName = scala.io.StdIn.readLine("Enter Table Name: ") 
         // describe table
         println(s"Describing table $db.$tableName..")
-        var sql = "describe " + tableName
-        System.out.println("Running: " + sql)
+        var sql = "describe " + db + "." + tableName
         var res = stmt.executeQuery(sql)
         while (res.next()) {
-            System.out.println(res.getString(1) + "\t" + res.getString(2))
+            println(res.getString(1) + "\t" + res.getString(2))
         }
     }
 
     def closeConnection(): Unit = {
         try {
         if (con != null)
+          println("Closing connection...")
           con.close();
       } catch {
         case ex: Throwable  => {
@@ -311,28 +311,114 @@ class hiveGo(){
             try {
                 do {
                     println("Please select an option")
-                    println("1. Pull All News\n2. Pull Top Headlines\n3. Go Back")
+                    println("1. Pull All News\n2. Pull Gaming Top Headlines\n3. Pull Top Headlines\n4. Go Back")
                     val option = scala.io.StdIn.readInt()
                     println()
                             
                     option match{
                         case 1 => {
-                            api.searchEverything("game", "","" ,"","","", "1")
+                            api.searchEverything("game", "","" ,"","en","", "1")
                         }
                         case 2 => {
-                            api.searchTopHeadlines("game","","technology","","1")
+                            api.searchTopHeadlines("game","us","technology","","1")
                         }
-                        case 3 => {
+                        case 3 =>{
+                            api.searchTopHeadlinesAll("technology","us","","1")
+                        }
+                        case 4 => {
                             loop = false
                         }
                     }
                 }while(loop)
             }catch{
-                case e: MatchError => println("Please pick a number between 1~3\n")
+                case e: MatchError => println("Please pick a number between 1~4\n")
                 case e: NumberFormatException => println("\nPlease enter a number\n") 
             }
         }else{
             println("Please use a database first!!")
         }
+    }
+
+    //1. Top Keyword related to Gaming
+    def questionOne(db: String): Unit = {
+        val bannedWords = List[String](" ","-","2","A","Atlanta","Houston","Korean","On","Series","Squid","against","an","announced",
+                                      "available","back","been","but","can", "coming", "game.", "his", "how", "just", "like", "not",
+                                       "or", "out", "over", "popular", "show", "some", "studio", "their", "two", "up", "was", "what", 
+                                       "which", "working","a", "the", "word", "in", "of", "to", "The", "by", "for", "has", "is", "Game", 
+                                       "game", "its", "on", "that", "with", "games", "it","will", "about", "are", "as", "at", "be", "de", 
+                                       "from", "have", "more", "new", "one", "series", "video", "you", "and", "world","en", "la", "el", 
+                                       "que", "un", "o", "der", "para", "y", "da", "na", "se", "com", "no", "do", "first", "this", "à", 
+                                       "die", "por", "le", "avec", "les", "una", ",", "La", "World", "all", "des", "latest", "los", "since", 
+                                       "et", "es", "Check", "em", "plus", "early", "Call", "con", "é", "…", "also", "after", "une", "we", 
+                                       "November", "In", "look", "Pass", "War", "und", "game", "Le", "become", "iconic", "upcoming", "pour", "e", 
+                                       "3", "your", "null", "sur", "team", "est", "he", "на", "now", "when", "—", "only", "made")
+        println("Running Query...\n")
+        var res = stmt.executeQuery("select word, count(1) as cnt from ( select explode(split(description, ' ')) as word from demo.allnews) q  where word != " + {'"'} + " " + {'"'} + "group by word having count(1)>6 order by cnt desc")
+        while (res.next()) {
+            if(!bannedWords.contains(res.getString(1)) && !" ".contains(res.getString(1))){
+                println(s"Top Keyword: ${res.getString(1)} Occurences: ${res.getString(2).toInt}")
+            }
+        }
+        println()
+    }
+    //2. News source that talks about gaming the most
+    def questionTwo(db: String): Unit = {
+        println("Running Query...\n")
+        var res = stmt.executeQuery("select name, count(*) as cnt from demo.topnews group by name order by cnt desc limit 1")
+        while (res.next()) {
+            println(s"News Source: ${res.getString(1)} Occurences: ${res.getString(2).toInt}\n")
+        }
+    }
+    //3. Most popular console.
+    def questionThree(db: String): Unit = {
+        val consoles = List[String]("PlayStation", "PS5", "PS4", "PS3","XBOX","Xbox", "Nintendo","Switch")
+        println("Running Query...\n")
+        var res = stmt.executeQuery("select word, count(1) as cnt from ( select explode(split(description, ' ')) as word from demo.allnews) q  group by word having count(1)>1 order by cnt desc")
+        while (res.next()) {
+            if(consoles.contains(res.getString(1))){
+                println(s"Console: ${res.getString(1)} Occurences: ${res.getString(2).toInt}")
+            }
+        }
+        println()    
+    }
+    //4. Most popular game
+    def questionFour(db: String): Unit = {
+        val games = Map("League" -> "League of Legends", "Duty" -> "Call of Duty",
+                         "Resident" -> "Resident Evil","Skater" -> "Pro Skater","PUBG" -> "PUBG", "Auto" -> "Grand Theft Auto","GTA" -> "Grand Theft Auto",
+                         "Pokémon" -> "Pokémon", "Fantasy" -> "Final Fantasy", "Souls" -> "Dark Souls", "Forza" -> "Forza Horizon 5", "Pikmin" -> "Pikmin Bloom", "Splitgate" -> "Splitgate",
+                         "Zoo" -> "Zoo simulator", "Genshin" -> "Genshin Impact")
+        println("Running Query...\n")
+        var res = stmt.executeQuery("select word, count(1) as cnt from ( select explode(split(description, ' ')) as word from demo.allnews) q group by word having count(1)>1 order by cnt desc")
+        while (res.next()) {
+            if(games.contains(res.getString(1))){
+                println(s"Game: ${games(res.getString(1))} Occurences: ${res.getString(2).toInt}")
+            }
+        } 
+        println()   
+    }
+    //5. Most popular game publisher
+    def questionFive(db: String): Unit = {
+        val publishers = List[String]("Nintendo", "EA", "Sony", "XSEED", "Capcom", "Activision", "Blizzard", "Ubisoft", "Sega", "Bethesda", "Digerati", "NIS", "Focus", "THQ", "Paradox","505","Aksys", "Microsoft", "Konami")
+        println("Running Query...\n")
+        var res = stmt.executeQuery("select word, count(1) as cnt from ( select explode(split(description, ' ')) as word from demo.allnews) q  group by word having count(1)>1 order by cnt desc")
+        while (res.next()) {
+            if(publishers.contains(res.getString(1))){
+                println(s"Game Publisher: ${res.getString(1)} Occurences: ${res.getString(2).toInt}")
+            }
+        }
+        println()      
+    }
+    //6. Percent of all top news headlines related to gaming
+    def questionSix(db: String): Unit = {
+        var game = new ListBuffer[(String)]()
+        println("Running Query...\n")
+        var res = stmt.executeQuery("select distinct total from demo.topnewsall")
+        while (res.next()) {
+            game += res.getString(1)
+        }
+        var t1: Double = game(1).toDouble
+        var t2: Double = game(2).toDouble
+        var percent = t1/t2 * 100
+        println(f"Percentage: $percent%.2f %%\n")     
     }
 }
