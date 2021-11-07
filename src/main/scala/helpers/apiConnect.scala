@@ -114,7 +114,7 @@ class apiConnect(db: String) {
     class hiveGo2(db: String) extends hiveGo() {
         def populateTable(tableName: String){
             try {
-                println(s"Database: $db")
+                println(s"\nDatabase: $db")
                 if(!db.isEmpty){
                     val filepath = "/user/maria_dev/project1/"
                     val columns = "(name string, author string, title string, description string, url string,total int)"
