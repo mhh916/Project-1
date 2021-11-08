@@ -361,7 +361,8 @@ class hiveGo(){
                                        "die", "por", "le", "avec", "les", "una", ",", "La", "World", "all", "des", "latest", "los", "since", 
                                        "et", "es", "Check", "em", "plus", "early", "Call", "con", "é", "…", "also", "after", "une", "we", 
                                        "November", "In", "look", "Pass", "War", "und", "game", "Le", "become", "iconic", "upcoming", "pour", "e", 
-                                       "3", "your", "null", "sur", "team", "est", "he", "на", "now", "when", "—", "only", "made")
+                                       "3", "your", "null", "sur", "team", "est", "he", "на", "now", "when", "—", "only", "made", "As", "they",
+                                       "And","our","may","Animal","than")
         println("Running Query...\n")
         var res = stmt.executeQuery("select word, count(1) as cnt from ( select explode(split(description, ' ')) as word from demo.allnews) q  where word != " + {'"'} + " " + {'"'} + "group by word having count(1)>6 order by cnt desc")
         while (res.next()) {
@@ -396,7 +397,7 @@ class hiveGo(){
         val games = Map("League" -> "League of Legends", "Duty" -> "Call of Duty",
                          "Resident" -> "Resident Evil","Skater" -> "Pro Skater","PUBG" -> "PUBG", "Auto" -> "Grand Theft Auto","GTA" -> "Grand Theft Auto",
                          "Pokémon" -> "Pokémon", "Fantasy" -> "Final Fantasy", "Souls" -> "Dark Souls", "Forza" -> "Forza Horizon 5", "Pikmin" -> "Pikmin Bloom", "Splitgate" -> "Splitgate",
-                         "Zoo" -> "Zoo simulator", "Genshin" -> "Genshin Impact")
+                         "Zoo" -> "Zoo simulator", "Genshin" -> "Genshin Impact", "Animal" -> "Animal Crossing")
         println("Running Query...\n")
         var res = stmt.executeQuery("select word, count(1) as cnt from ( select explode(split(description, ' ')) as word from demo.allnews) q group by word having count(1)>1 order by cnt desc")
         while (res.next()) {
@@ -426,9 +427,17 @@ class hiveGo(){
         while (res.next()) {
             game += res.getString(1)
         }
-        var t1: Double = game(1).toDouble
-        var t2: Double = game(2).toDouble
-        var percent = t1/t2 * 100
-        println(f"Percentage: $percent%.2f %%\n")     
+        if(game(0) != null || !game(0).contains("null")){
+            var t1: Double = game(0).toDouble
+            var t2: Double = game(1).toDouble
+            var percent = t1/t2 * 100
+            println(f"Percentage: $percent%.2f %%\n")         
+        }else {
+            var t1: Double = game(1).toDouble
+            var t2: Double = game(2).toDouble
+            var percent = t1/t2 * 100
+            println(f"Percentage: $percent%.2f %%\n")     
+        }
+        
     }
 }
