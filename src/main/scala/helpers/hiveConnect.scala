@@ -362,7 +362,7 @@ class hiveGo(){
                                        "et", "es", "Check", "em", "plus", "early", "Call", "con", "é", "…", "also", "after", "une", "we", 
                                        "November", "In", "look", "Pass", "War", "und", "game", "Le", "become", "iconic", "upcoming", "pour", "e", 
                                        "3", "your", "null", "sur", "team", "est", "he", "на", "now", "when", "—", "only", "made", "As", "they",
-                                       "And","our","may","Animal","than")
+                                       "And","our","may","Animal","than","might", "week","last","Netflix")
         println("Running Query...\n")
         var res = stmt.executeQuery("select word, count(1) as cnt from ( select explode(split(description, ' ')) as word from demo.allnews) q  where word != " + {'"'} + " " + {'"'} + "group by word having count(1)>6 order by cnt desc")
         while (res.next()) {
@@ -427,16 +427,18 @@ class hiveGo(){
         while (res.next()) {
             game += res.getString(1)
         }
-        if(game(0) != null || !game(0).contains("null")){
+        try {
             var t1: Double = game(0).toDouble
             var t2: Double = game(1).toDouble
             var percent = t1/t2 * 100
-            println(f"Percentage: $percent%.2f %%\n")         
-        }else {
-            var t1: Double = game(1).toDouble
-            var t2: Double = game(2).toDouble
-            var percent = t1/t2 * 100
-            println(f"Percentage: $percent%.2f %%\n")     
+            println(f"Percentage: $percent%.2f %%\n")   
+        } catch {
+            case e: Exception => {
+                var t1: Double = game(1).toDouble
+                var t2: Double = game(2).toDouble
+                var percent = t1/t2 * 100
+                println(f"Percentage: $percent%.2f %%\n")  
+            }
         }
         
     }
